@@ -134,6 +134,19 @@ lo expone ([issue #966](https://github.com/terraform-routeros/terraform-provider
 así que el "Client Config" que genera el router queda sin `AllowedIPs`. La config completa es la
 de `client_configs` / los archivos `.conf`, no el QR del router.
 
+Como el router sí devuelve ese campo al leer el peer, cada plan y cada apply emiten **un warning
+por usuario**:
+
+```
+Warning: Field 'client_allowed_address' not found in the schema
+  with module.wireguard.routeros_interface_wireguard_peer.user["..."]
+```
+
+Es inofensivo y no hay forma de silenciarlo desde el provider (`suppress_syso_del_warn` es para
+otra cosa y `routeros_version` no agrega campos que el provider no implementa). Es el precio de
+poblar los campos `client_*` del peer; se va si se dejan de setear, a cambio de que el peer se
+vea vacío en WinBox. Desaparece solo cuando el provider agregue el campo.
+
 **El `place_before` se resuelve por comentario.** Si se renombra o se borra en el router la regla
 que sirve de ancla, el plan falla al no encontrarla. Es deliberado: es preferible un error a
 insertar una regla en una posición donde no hace efecto.

@@ -2,7 +2,7 @@ locals {
   router_address = coalesce(var.router_address, cidrhost(var.tunnel_subnet, 1))
   subnet_mask    = split("/", var.tunnel_subnet)[1]
 
-  # pares usuario x endpoint aplanados para las address lists
+  # user x endpoint pairs, flattened for the address lists
   user_endpoints = merge([
     for user, cfg in var.users : {
       for ep in cfg.endpoints : "${user}:${ep}" => { user = user, endpoint = ep }
@@ -26,12 +26,12 @@ resource "routeros_ip_address" "this" {
   comment   = var.comment
 
   lifecycle {
-    # El provider incluye 'vrf' en el payload de update y /ip/address de ROS 7.24
-    # lo rechaza ("unknown parameter vrf"), asi que este recurso no se puede
-    # modificar in place. El comment se fija al crearlo y despues se ignora: sin
-    # esto, cambiar var.comment deja el stack sin poder converger.
-    # Para cambiarlo de verdad hay que recrear el recurso con -replace, que deja
-    # la interfaz sin IP unos instantes.
+    # The provider includes 'vrf' in the update payload and /ip/address on ROS 7.24
+    # rejects it ("unknown parameter vrf"), so this resource cannot be updated in
+    # place. The comment is set on creation and ignored afterwards: without this,
+    # changing var.comment would leave the stack unable to converge.
+    # To really change it, recreate the resource with -replace, which leaves the
+    # interface without an address for a moment.
     ignore_changes = [comment]
   }
 }

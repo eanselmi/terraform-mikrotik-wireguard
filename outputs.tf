@@ -1,30 +1,30 @@
 output "server_public_key" {
-  description = "Clave publica de la interfaz WireGuard del router."
+  description = "Public key of the router's WireGuard interface."
   value       = routeros_interface_wireguard.this.public_key
 }
 
 output "interface_name" {
-  description = "Nombre de la interfaz creada en el router."
+  description = "Name of the interface created on the router."
   value       = routeros_interface_wireguard.this.name
 }
 
 output "listen_port" {
-  description = "Puerto UDP en el que escucha la interfaz. Es el que hay que abrir en el firewall de red."
+  description = "UDP port the interface listens on. This is the port to open on the network firewall."
   value       = routeros_interface_wireguard.this.listen_port
 }
 
 output "router_address" {
-  description = "IP del router dentro del tunel."
+  description = "Router's IP inside the tunnel."
   value       = local.router_address
 }
 
 output "client_configs" {
-  description = "Config de WireGuard por usuario, lista para entregar."
+  description = "WireGuard configuration per user, ready to hand out."
   value       = local.client_configs
   sensitive   = true
 }
 
 output "peer_public_keys" {
-  description = "Clave publica de cada usuario, por si hace falta identificar un peer en el router."
+  description = "Public key of each user, useful to identify a peer on the router."
   value       = { for user, key in wireguard_asymmetric_key.user : user => key.public_key }
 }

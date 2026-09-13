@@ -1,5 +1,5 @@
-# Anclas de posicion. El provider ubica una regla con place_before <id>, asi que hay
-# que resolver el id de la regla de referencia a partir de su comentario.
+# Position anchors. The provider places a rule with place_before <id>, so the id of
+# the reference rule has to be resolved from its comment.
 data "routeros_firewall" "input_anchor" {
   count = var.input_place_before_comment == null ? 0 : 1
 
@@ -21,8 +21,8 @@ data "routeros_firewall" "srcnat_anchor" {
   }
 }
 
-# Una address list por usuario con sus destinos habilitados. RouterOS resuelve los
-# FQDN dinamicamente (requiere /ip dns configurado).
+# One address list per user, holding their allowed destinations. RouterOS resolves
+# FQDNs dynamically (requires /ip dns to be configured).
 resource "routeros_ip_firewall_addr_list" "user_endpoint" {
   for_each = local.user_endpoints
 
@@ -31,8 +31,8 @@ resource "routeros_ip_firewall_addr_list" "user_endpoint" {
   comment = var.comment
 }
 
-# Default-deny del tunel. Va scopeado a la subnet: nunca un drop sin acotar, aunque
-# al chain solo se llegue por el jump.
+# Default deny for the tunnel. Scoped to the subnet: never an unscoped drop, even
+# though the chain is only reachable through the jump.
 resource "routeros_ip_firewall_filter" "drop" {
   chain       = var.firewall_chain
   action      = "drop"
@@ -42,24 +42,24 @@ resource "routeros_ip_firewall_filter" "drop" {
   comment     = "${var.comment} - default deny"
 }
 
-# Un accept por usuario, siempre antes del drop. Las reglas son disjuntas entre si
-# (matchean por src), asi que su orden relativo no importa.
+# One accept per user, always before the drop. The rules are disjoint (they match on
+# source), so their relative order does not matter.
 resource "routeros_ip_firewall_filter" "user" {
   for_each = var.users
 
   chain  = var.firewall_chain
   action = "accept"
-  # Sin /32: RouterOS normaliza una mascara de host a la IP pelada y el plan
-  # mostraria un cambio en cada corrida.
+  # No /32: RouterOS normalizes a host mask to the bare IP, which would show up as a
+  # change on every plan.
   src_address      = each.value.ip
   dst_address_list = "${var.address_list_prefix}${each.key}"
   comment          = "${var.comment} - ${each.key}"
   place_before     = routeros_ip_firewall_filter.drop.id
 }
 
-# Doble condicion (interfaz + subnet) para que nada ajeno al tunel entre al chain.
-# Solo las conexiones nuevas pagan la evaluacion, porque el accept de
-# established/related del forward chain las corta antes.
+# Two conditions (interface and subnet) so nothing foreign to the tunnel enters the
+# chain. Only new connections pay for the evaluation, because the established/related
+# accept in the forward chain matches them first.
 resource "routeros_ip_firewall_filter" "jump" {
   chain        = "forward"
   action       = "jump"

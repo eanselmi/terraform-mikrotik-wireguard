@@ -14,6 +14,6 @@ override.tf.json
 terraform.rc
 .DS_Store
 
-# Configs de cliente: contienen claves privadas.
+# Client configurations: they contain private keys.
 **/config_files/
 *.conf

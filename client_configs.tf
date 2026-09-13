@@ -12,9 +12,9 @@ locals {
   }
 }
 
-# Un archivo por usuario. Al sacar un usuario de var.users, Terraform destruye el
-# recurso y borra el archivo del disco.
-# Contienen la clave privada del usuario: mantener el directorio fuera de git.
+# One file per user. Removing a user from var.users destroys the resource and deletes
+# the file from disk.
+# These files contain the user's private key: keep the directory out of version control.
 resource "local_sensitive_file" "client_config" {
   for_each = var.client_config_path == null ? {} : local.client_configs
 

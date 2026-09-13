@@ -24,4 +24,14 @@ resource "routeros_ip_address" "this" {
   address   = "${local.router_address}/${local.subnet_mask}"
   interface = routeros_interface_wireguard.this.name
   comment   = var.comment
+
+  lifecycle {
+    # El provider incluye 'vrf' en el payload de update y /ip/address de ROS 7.24
+    # lo rechaza ("unknown parameter vrf"), asi que este recurso no se puede
+    # modificar in place. El comment se fija al crearlo y despues se ignora: sin
+    # esto, cambiar var.comment deja el stack sin poder converger.
+    # Para cambiarlo de verdad hay que recrear el recurso con -replace, que deja
+    # la interfaz sin IP unos instantes.
+    ignore_changes = [comment]
+  }
 }

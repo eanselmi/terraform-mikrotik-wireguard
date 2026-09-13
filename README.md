@@ -142,6 +142,16 @@ insertar una regla en una posición donde no hace efecto.
 `src_address` de las reglas por usuario va sin máscara. En `allowed_address` del peer sí se
 conserva.
 
+**`routeros_ip_address` no se puede modificar in place.** El provider incluye `vrf` en el payload
+de update y `/ip/address` de ROS 7.24 lo rechaza con `unknown parameter vrf`. El módulo ignora
+los cambios de `comment` en ese recurso para que un cambio de `var.comment` no deje el stack sin
+converger: el comentario se fija al crearlo. Si hace falta cambiarlo de verdad, hay que recrear
+el recurso, lo que deja la interfaz sin IP unos instantes:
+
+```bash
+terraform apply -replace='module.wireguard.routeros_ip_address.this'
+```
+
 ## Licencia
 
 MIT
